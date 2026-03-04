@@ -2,11 +2,9 @@
 
 // Инициализация Telegram Web App
 const tg = window.Telegram.WebApp;
-tg.expand();
 
 // Глобальные переменные
 let currentModal = null;
-let pendingCommand = null;
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', () => {
@@ -17,6 +15,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Инициализация
 function initApp() {
+    // Раскрыть на весь экран
+    tg.expand();
+
+    // Настройка Main Button (главная кнопка внизу)
+    tg.MainButton.setText("ВЫПОЛНИТЬ");
+    tg.MainButton.setParams({
+        color: '#f7931a',
+        text_color: '#ffffff'
+    });
+
     // Настройка цветов под тему Telegram
     if (tg.colorScheme === 'dark') {
         document.documentElement.style.setProperty('--bg', '#0f1419');
@@ -29,10 +37,17 @@ function initApp() {
     }
 
     // Установка данных пользователя
-    userData.telegramId = tg.initDataUnsafe?.user?.id;
-    userData.username = tg.initDataUnsafe?.user?.username;
+    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        userData.telegramId = tg.initDataUnsafe.user.id;
+        userData.username = tg.initDataUnsafe.user.username;
+        document.getElementById('userId').textContent = '@' + (userData.username || userData.telegramId);
+    }
 
-    console.log('User:', userData);
+    console.log('Web App initialized:', {
+        userId: userData.telegramId,
+        username: userData.username,
+        platform: tg.platform
+    });
 
     // Готово
     tg.ready();
@@ -54,23 +69,27 @@ function createParticles() {
 }
 
 // Загрузка данных пользователя
-async function loadUserData() {
-    try {
-        // Здесь можно загрузить данные с сервера о привязке оператор-клиент
-        // Пока используем заглушку
-        showNotification('Добро пожаловать! 🎀', 'success');
-    } catch (error) {
-        console.error('Error loading user data:', error);
-    }
+function loadUserData() {
+    showNotification('Добро пожаловать! 🎀', 'success');
+}
+
+// ОТПРАВКА КОМАНДЫ В БОТА (ИСПРАВЛЕНО)
+function sendCommand(command) {
+    console.log('Sending command:', command);
+
+    // Показываем уведомление
+    showNotification(`Отправка: ${command}`, 'success');
+
+    // ОТПРАВЛЯЕМ ДАННЫЕ БОТУ (закрывает Web App)
+    tg.sendData(command);
+
+    // Закрываем Web App через 500мс
+    setTimeout(() => {
+        tg.close();
+    }, 500);
 }
 
 // Обработчики кнопок
-function sendCommand(command) {
-    showNotification(`Отправка: ${command}`, 'success');
-    tg.sendData(command);
-    setTimeout(() => tg.close(), 1000);
-}
-
 function openModal(type) {
     currentModal = type;
 
@@ -113,6 +132,12 @@ function showStopModal() {
     `;
 
     showModal(html);
+
+    // Показываем Main Button
+    tg.MainButton.onClick(() => {
+        executeStop();
+    });
+    tg.MainButton.show();
 }
 
 function executeStop() {
@@ -124,7 +149,11 @@ function executeStop() {
     }
 
     const command = `!stop ${seconds}`;
-    executeCommandWithResponse(command, 'stop');
+    sendCommand(command);
+
+    // Скрываем Main Button
+    tg.MainButton.offClick();
+    tg.MainButton.hide();
 }
 
 // МОДАЛЬНОЕ ОКНО: ДРУЖИМ
@@ -149,6 +178,11 @@ function showFriendsModal() {
     `;
 
     showModal(html);
+
+    tg.MainButton.onClick(() => {
+        executeFriends();
+    });
+    tg.MainButton.show();
 }
 
 function executeFriends() {
@@ -166,7 +200,10 @@ function executeFriends() {
     }
 
     const command = `!spam ${count} ${interval}`;
-    executeCommandWithResponse(command, 'friends');
+    sendCommand(command);
+
+    tg.MainButton.offClick();
+    tg.MainButton.hide();
 }
 
 // МОДАЛЬНОЕ ОКНО: БАЛАНС
@@ -187,25 +224,14 @@ function showBalanceModal() {
                 Закрыть
             </button>
         </div>
-        <div id="balanceResult" class="result-box" style="display: none;"></div>
     `;
 
     showModal(html);
 }
 
-async function checkBalance(type) {
+function checkBalance(type) {
     const command = type === 'personal' ? '!bal' : '!bankbal';
-
-    // Показываем загрузку
-    const resultBox = document.getElementById('balanceResult');
-    resultBox.style.display = 'block';
-    resultBox.innerHTML = `
-        <h3>⏳ Загрузка...</h3>
-        <div class="loading-spinner"></div>
-    `;
-
-    // Отправляем команду и ждём ответ
-    await executeCommandWithResponse(command, 'balance', resultBox);
+    sendCommand(command);
 }
 
 // МОДАЛЬНОЕ ОКНО: ЛАГЕРЬ
@@ -230,6 +256,11 @@ function showCampModal() {
     `;
 
     showModal(html);
+
+    tg.MainButton.onClick(() => {
+        executeCamp();
+    });
+    tg.MainButton.show();
 }
 
 function executeCamp() {
@@ -242,7 +273,10 @@ function executeCamp() {
     }
 
     const command = `!camp ${x} ${y}`;
-    executeCommandWithResponse(command, 'camp');
+    sendCommand(command);
+
+    tg.MainButton.offClick();
+    tg.MainButton.hide();
 }
 
 // МОДАЛЬНОЕ ОКНО: ОХОТА
@@ -267,6 +301,11 @@ function showHuntModal() {
     `;
 
     showModal(html);
+
+    tg.MainButton.onClick(() => {
+        executeHunt();
+    });
+    tg.MainButton.show();
 }
 
 function executeHunt() {
@@ -279,40 +318,10 @@ function executeHunt() {
     }
 
     const command = `!hunt ${x} ${y}`;
-    executeCommandWithResponse(command, 'hunt');
-}
+    sendCommand(command);
 
-// Выполнение команды с ответом
-async function executeCommandWithResponse(command, type, resultElement = null) {
-    try {
-        // Отправляем команду боту
-        tg.sendData(command);
-
-        // Показываем уведомление
-        showNotification('Команда отправлена! ⏳', 'success');
-
-        // Для команд с ответом ждём данные от бота
-        if (['balance', 'stop', 'friends', 'camp', 'hunt'].includes(type)) {
-            // Здесь должна быть логика ожидания ответа от бота
-            // В реальном приложении ответ придёт через WebSocket или polling
-
-            setTimeout(() => {
-                if (resultElement) {
-                    resultElement.innerHTML = `
-                        <h3>✅ Успешно!</h3>
-                        <pre>Команда: ${command}\nСтатус: Выполняется...</pre>
-                    `;
-                }
-                showNotification('Команда выполнена! ✨', 'success');
-            }, 2000);
-        }
-
-        closeModal();
-
-    } catch (error) {
-        console.error('Error executing command:', error);
-        showNotification('Ошибка выполнения команды!', 'error');
-    }
+    tg.MainButton.offClick();
+    tg.MainButton.hide();
 }
 
 // Показать модальное окно
@@ -329,6 +338,10 @@ function closeModal() {
     const overlay = document.getElementById('modalOverlay');
     overlay.classList.remove('active');
     currentModal = null;
+
+    // Скрываем Main Button
+    tg.MainButton.offClick();
+    tg.MainButton.hide();
 }
 
 // Показать уведомление
@@ -344,40 +357,6 @@ function showNotification(message, type = 'success') {
         notification.classList.remove('show');
         setTimeout(() => notification.remove(), 300);
     }, 3000);
-}
-
-// Обработка данных от бота
-tg.onEvent('mainButtonClicked', () => {
-    console.log('Main button clicked');
-});
-
-// Получение данных от бота (ответы на команды)
-window.addEventListener('message', (event) => {
-    if (event.origin === 'https://t.me') {
-        const data = event.data;
-        console.log('Received from bot:', data);
-
-        // Обработка ответа от бота
-        if (data.type === 'command_response') {
-            handleBotResponse(data.command, data.response);
-        }
-    }
-});
-
-// Обработка ответа от бота
-function handleBotResponse(command, response) {
-    console.log('Bot response:', command, response);
-
-    // Обновляем результат в модальном окне
-    const resultBox = document.getElementById('balanceResult');
-    if (resultBox && command.includes('bal')) {
-        resultBox.innerHTML = `
-            <h3>✅ Ответ бота:</h3>
-            <pre>${response}</pre>
-        `;
-    }
-
-    showNotification('Ответ получен! ✅', 'success');
 }
 
 // Экспорт функций для HTML
