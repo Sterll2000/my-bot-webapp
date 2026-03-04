@@ -6,15 +6,7 @@ const tg = window.Telegram.WebApp;
 // Глобальные переменные
 let currentModal = null;
 
-// Пользовательские данные
-let userData = {
-    telegramId: null,
-    username: null,
-    role: 'client',
-    linkedOperator: null,
-    linkedClient: null,
-    chatId: null
-};
+// ✅ НЕ объявляем userData здесь - она уже в config.js!
 
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', () => {
@@ -53,7 +45,6 @@ function initApp() {
         document.getElementById('userId').textContent = '@' + (userData.username || userData.telegramId);
     }
     
-    // ✅ ИСПРАВЛЕНО: Правильный console.log
     console.log('Web App initialized');
     console.log('User ID:', userData.telegramId);
     console.log('Username:', userData.username);
@@ -83,18 +74,11 @@ function loadUserData() {
     showNotification('Добро пожаловать! 🎀', 'success');
 }
 
-// ✅ ОТПРАВКА КОМАНДЫ В БОТА
+// ОТПРАВКА КОМАНДЫ В БОТА
 function sendCommand(command) {
-    // ✅ ИСПРАВЛЕНО: Правильный console.log
     console.log('Sending command:', command);
-    
-    // Показываем уведомление
     showNotification('Отправка: ' + command, 'success');
-    
-    // ОТПРАВЛЯЕМ ДАННЫЕ БОТУ
     tg.sendData(command);
-    
-    // Закрываем Web App через 500мс
     setTimeout(() => {
         tg.close();
     }, 500);
@@ -127,20 +111,12 @@ function openModal(type) {
 
 // МОДАЛЬНОЕ ОКНО: СТОП
 function showStopModal() {
-    const html = `
-        <div class="modal-header">
-            <h2>🛑 Стоп Бот</h2>
-            <p>Укажите длительность паузы</p>
-        </div>
-        <div class="input-group">
-            <label>Секунды остановки</label>
-            <input type="number" id="stopSeconds" placeholder="Например: 60" min="1" max="3600">
-        </div>
-        <div class="modal-buttons">
-            <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Отмена</button>
-            <button class="modal-btn modal-btn-confirm" onclick="executeStop()">Выполнить</button>
-        </div>
-    `;
+    const html = '<div class="modal-header"><h2>🛑 Стоп Бот</h2><p>Укажите длительность паузы</p></div>' +
+        '<div class="input-group"><label>Секунды остановки</label>' +
+        '<input type="number" id="stopSeconds" placeholder="Например: 60" min="1" max="3600"></div>' +
+        '<div class="modal-buttons">' +
+        '<button class="modal-btn modal-btn-cancel" onclick="closeModal()">Отмена</button>' +
+        '<button class="modal-btn modal-btn-confirm" onclick="executeStop()">Выполнить</button></div>';
     
     showModal(html);
     
@@ -167,24 +143,14 @@ function executeStop() {
 
 // МОДАЛЬНОЕ ОКНО: ДРУЖИМ
 function showFriendsModal() {
-    const html = `
-        <div class="modal-header">
-            <h2>🤝 Дружим</h2>
-            <p>Настройка авто-дружбы</p>
-        </div>
-        <div class="input-group">
-            <label>Количество ручек (макс. 120)</label>
-            <input type="number" id="friendsCount" placeholder="Например: 50" min="1" max="120">
-        </div>
-        <div class="input-group">
-            <label>Интервал между ручками (сек)</label>
-            <input type="number" id="friendsInterval" placeholder="Рекомендуется: 2" min="1" max="60" value="2">
-        </div>
-        <div class="modal-buttons">
-            <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Отмена</button>
-            <button class="modal-btn modal-btn-confirm" onclick="executeFriends()">Выполнить</button>
-        </div>
-    `;
+    const html = '<div class="modal-header"><h2>🤝 Дружим</h2><p>Настройка авто-дружбы</p></div>' +
+        '<div class="input-group"><label>Количество ручек (макс. 120)</label>' +
+        '<input type="number" id="friendsCount" placeholder="Например: 50" min="1" max="120"></div>' +
+        '<div class="input-group"><label>Интервал между ручками (сек)</label>' +
+        '<input type="number" id="friendsInterval" placeholder="Рекомендуется: 2" min="1" max="60" value="2"></div>' +
+        '<div class="modal-buttons">' +
+        '<button class="modal-btn modal-btn-cancel" onclick="closeModal()">Отмена</button>' +
+        '<button class="modal-btn modal-btn-confirm" onclick="executeFriends()">Выполнить</button></div>';
     
     showModal(html);
     
@@ -217,23 +183,11 @@ function executeFriends() {
 
 // МОДАЛЬНОЕ ОКНО: БАЛАНС
 function showBalanceModal() {
-    const html = `
-        <div class="modal-header">
-            <h2>💵 Баланс</h2>
-            <p>Выберите тип баланса</p>
-        </div>
-        <div class="modal-buttons" style="flex-direction: column; gap: 15px;">
-            <button class="modal-btn modal-btn-confirm" onclick="checkBalance('personal')">
-                👤 Личный баланс
-            </button>
-            <button class="modal-btn modal-btn-confirm" onclick="checkBalance('bank')">
-                🏦 Общий баланс банка
-            </button>
-            <button class="modal-btn modal-btn-cancel" onclick="closeModal()">
-                Закрыть
-            </button>
-        </div>
-    `;
+    const html = '<div class="modal-header"><h2>💵 Баланс</h2><p>Выберите тип баланса</p></div>' +
+        '<div class="modal-buttons" style="flex-direction: column; gap: 15px;">' +
+        '<button class="modal-btn modal-btn-confirm" onclick="checkBalance(\'personal\')">👤 Личный баланс</button>' +
+        '<button class="modal-btn modal-btn-confirm" onclick="checkBalance(\'bank\')">🏦 Общий баланс банка</button>' +
+        '<button class="modal-btn modal-btn-cancel" onclick="closeModal()">Закрыть</button></div>';
     
     showModal(html);
 }
@@ -245,24 +199,14 @@ function checkBalance(type) {
 
 // МОДАЛЬНОЕ ОКНО: ЛАГЕРЬ
 function showCampModal() {
-    const html = `
-        <div class="modal-header">
-            <h2>⛺ Лагерь</h2>
-            <p>Укажите координаты</p>
-        </div>
-        <div class="input-group">
-            <label>Координата X</label>
-            <input type="number" id="campX" placeholder="Например: 100">
-        </div>
-        <div class="input-group">
-            <label>Координата Y</label>
-            <input type="number" id="campY" placeholder="Например: 200">
-        </div>
-        <div class="modal-buttons">
-            <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Отмена</button>
-            <button class="modal-btn modal-btn-confirm" onclick="executeCamp()">Выполнить</button>
-        </div>
-    `;
+    const html = '<div class="modal-header"><h2>⛺ Лагерь</h2><p>Укажите координаты</p></div>' +
+        '<div class="input-group"><label>Координата X</label>' +
+        '<input type="number" id="campX" placeholder="Например: 100"></div>' +
+        '<div class="input-group"><label>Координата Y</label>' +
+        '<input type="number" id="campY" placeholder="Например: 200"></div>' +
+        '<div class="modal-buttons">' +
+        '<button class="modal-btn modal-btn-cancel" onclick="closeModal()">Отмена</button>' +
+        '<button class="modal-btn modal-btn-confirm" onclick="executeCamp()">Выполнить</button></div>';
     
     showModal(html);
     
@@ -290,24 +234,14 @@ function executeCamp() {
 
 // МОДАЛЬНОЕ ОКНО: ОХОТА
 function showHuntModal() {
-    const html = `
-        <div class="modal-header">
-            <h2>🎯 Охота</h2>
-            <p>Укажите координаты для охоты</p>
-        </div>
-        <div class="input-group">
-            <label>Координата X</label>
-            <input type="number" id="huntX" placeholder="Например: 150">
-        </div>
-        <div class="input-group">
-            <label>Координата Y</label>
-            <input type="number" id="huntY" placeholder="Например: 250">
-        </div>
-        <div class="modal-buttons">
-            <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Отмена</button>
-            <button class="modal-btn modal-btn-confirm" onclick="executeHunt()">Выполнить</button>
-        </div>
-    `;
+    const html = '<div class="modal-header"><h2>🎯 Охота</h2><p>Укажите координаты для охоты</p></div>' +
+        '<div class="input-group"><label>Координата X</label>' +
+        '<input type="number" id="huntX" placeholder="Например: 150"></div>' +
+        '<div class="input-group"><label>Координата Y</label>' +
+        '<input type="number" id="huntY" placeholder="Например: 250"></div>' +
+        '<div class="modal-buttons">' +
+        '<button class="modal-btn modal-btn-cancel" onclick="closeModal()">Отмена</button>' +
+        '<button class="modal-btn modal-btn-confirm" onclick="executeHunt()">Выполнить</button></div>';
     
     showModal(html);
     
@@ -367,7 +301,7 @@ function showNotification(message, type = 'success') {
     }, 3000);
 }
 
-// Экспорт функций для HTML
+// ✅ ЭКСПОРТ ФУНКЦИЙ В WINDOW (исправлено)
 window.sendCommand = sendCommand;
 window.openModal = openModal;
 window.closeModal = closeModal;
@@ -376,3 +310,5 @@ window.executeFriends = executeFriends;
 window.checkBalance = checkBalance;
 window.executeCamp = executeCamp;
 window.executeHunt = executeHunt;
+window.showModal = showModal;
+window.showNotification = showNotification;
