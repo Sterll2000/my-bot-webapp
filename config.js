@@ -1,4 +1,5 @@
 // config.js
+
 const CONFIG = {
     colors: {
         primary: '#f7931a',
@@ -13,17 +14,17 @@ const CONFIG = {
         text: '#ffffff',
         textSecondary: '#8b949e'
     },
-    
+
     api: {
         botToken: '8768027801:AAE-nFdnWkLLAVrjLIL5DGN_HIRz8k7JZ8o',
         baseUrl: 'https://api.telegram.org/bot'
     },
-    
+
     modals: {
         animationDuration: 300,
         autoCloseDelay: 3000
     },
-    
+
     limits: {
         maxFriends: 120,
         minInterval: 1,
@@ -32,7 +33,7 @@ const CONFIG = {
 };
 
 // ✅ userData объявляем ТОЛЬКО здесь
-let userData = {
+var userData = {
     telegramId: null,
     username: null,
     role: 'client',
