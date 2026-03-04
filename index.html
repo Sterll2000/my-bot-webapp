@@ -26,45 +26,19 @@
         </div>
         
         <div class="buttons-grid">
-            <button class="btn" onclick="openModal('stop')">
-                🛑<span>Стоп</span>
-            </button>
-            <button class="btn" onclick="openModal('friends')">
-                🤝<span>Дружим</span>
-            </button>
-            <button class="btn" onclick="openModal('balance')">
-                💵<span>Баланс</span>
-            </button>
-            <button class="btn" onclick="sendCommand('!res')">
-                💰<span>Ресы</span>
-            </button>
-            <button class="btn" onclick="sendCommand('!shield')">
-                🛡<span>Щит</span>
-            </button>
-            <button class="btn" onclick="openModal('hunt')">
-                🎯<span>Охота</span>
-            </button>
-            <button class="btn" onclick="sendCommand('!stats')">
-                📊<span>Стат</span>
-            </button>
-            <button class="btn" onclick="openModal('camp')">
-                ⛺<span>Лагерь</span>
-            </button>
-            <button class="btn" onclick="sendCommand('!dragon')">
-                🐉<span>Дракон</span>
-            </button>
-            <button class="btn" onclick="sendCommand('!exped')">
-                🧭<span>Экспед</span>
-            </button>
-            <button class="btn" onclick="sendCommand('!msg')">
-                📢<span>Сообщ</span>
-            </button>
-            <button class="btn" onclick="sendCommand('!restart')">
-                🔄<span>Рестарт</span>
-            </button>
-            <button class="btn btn-full" onclick="sendCommand('/menu')">
-                🏠<span>Главное Меню</span>
-            </button>
+            <button class="btn" onclick="openModal('stop')">🛑<span>Стоп</span></button>
+            <button class="btn" onclick="openModal('friends')">🤝<span>Дружим</span></button>
+            <button class="btn" onclick="openModal('balance')">💵<span>Баланс</span></button>
+            <button class="btn" onclick="sendCommand('!res')">💰<span>Ресы</span></button>
+            <button class="btn" onclick="sendCommand('!shield')">🛡<span>Щит</span></button>
+            <button class="btn" onclick="openModal('hunt')">🎯<span>Охота</span></button>
+            <button class="btn" onclick="sendCommand('!stats')">📊<span>Стат</span></button>
+            <button class="btn" onclick="openModal('camp')">⛺<span>Лагерь</span></button>
+            <button class="btn" onclick="sendCommand('!dragon')">🐉<span>Дракон</span></button>
+            <button class="btn" onclick="sendCommand('!exped')">🧭<span>Экспед</span></button>
+            <button class="btn" onclick="sendCommand('!msg')">📢<span>Сообщ</span></button>
+            <button class="btn" onclick="sendCommand('!restart')">🔄<span>Рестарт</span></button>
+            <button class="btn btn-full" onclick="sendCommand('/menu')">🏠<span>Главное Меню</span></button>
         </div>
     </div>
     
@@ -72,6 +46,7 @@
         <div class="modal" id="modalContent"></div>
     </div>
     
+    <!-- ✅ ВАЖНО: config.js ДО app.js -->
     <script src="config.js"></script>
     <script src="app.js"></script>
 </body>
