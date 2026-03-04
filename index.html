@@ -3,124 +3,104 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎀 Мой Бот</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎀 Bot Control Panel</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-            padding: 20px;
-        }
-
-        .header {
-            text-align: center;
-            padding: 20px 0;
-        }
-
-        .header h1 {
-            font-size: 24px;
-            color: var(--tg-theme-button-color, #3390ec);
-        }
-
-        .buttons-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn {
-            background: var(--tg-theme-button-color, #3390ec);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            padding: 15px 10px;
-            border-radius: 10px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .btn:active {
-            opacity: 0.7;
-        }
-
-        .btn-full {
-            grid-column: span 3;
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            color: var(--tg-theme-text-color, #000000);
-        }
-
-        .status {
-            text-align: center;
-            padding: 15px;
-            margin-top: 20px;
-            background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-            border-radius: 10px;
-            font-size: 14px;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div class="header">
-        <h1>🎀 Меню Бота</h1>
-        <p>Выберите действие</p>
+    <!-- Анимированный фон -->
+    <div class="animated-bg"></div>
+    <div class="particles"></div>
+
+    <!-- Контейнер -->
+    <div class="container">
+        <!-- Заголовок -->
+        <div class="header">
+            <h1>🎀 Bot Control</h1>
+            <p>Панель управления ботом</p>
+        </div>
+
+        <!-- Статус бар -->
+        <div class="status-bar">
+            <div class="status-info">
+                <div class="status-dot"></div>
+                <span id="statusText">Подключено</span>
+            </div>
+            <span id="userId">--</span>
+        </div>
+
+        <!-- Сетка кнопок -->
+        <div class="buttons-grid">
+            <button class="btn" onclick="openModal('stop')">
+                🛑
+                <span>Стоп</span>
+            </button>
+            <button class="btn" onclick="openModal('friends')">
+                🤝
+                <span>Дружим</span>
+            </button>
+            <button class="btn" onclick="openModal('balance')">
+                💵
+                <span>Баланс</span>
+            </button>
+
+            <button class="btn" onclick="sendCommand('!res')">
+                💰
+                <span>Ресы</span>
+            </button>
+            <button class="btn" onclick="sendCommand('!shield')">
+                🛡
+                <span>Щит</span>
+            </button>
+            <button class="btn" onclick="openModal('hunt')">
+                🎯
+                <span>Охота</span>
+            </button>
+
+            <button class="btn" onclick="sendCommand('!stats')">
+                📊
+                <span>Стат</span>
+            </button>
+            <button class="btn" onclick="openModal('camp')">
+                ⛺
+                <span>Лагерь</span>
+            </button>
+            <button class="btn" onclick="sendCommand('!dragon')">
+                🐉
+                <span>Дракон</span>
+            </button>
+
+            <button class="btn" onclick="sendCommand('!exped')">
+                🧭
+                <span>Экспед</span>
+            </button>
+            <button class="btn" onclick="sendCommand('!msg')">
+                📢
+                <span>Сообщ</span>
+            </button>
+            <button class="btn" onclick="sendCommand('!restart')">
+                🔄
+                <span>Рестарт</span>
+            </button>
+
+            <button class="btn btn-full" onclick="sendCommand('/menu')">
+                🏠
+                <span>Главное Меню</span>
+            </button>
+        </div>
     </div>
 
-    <div class="buttons-grid">
-        <button class="btn" onclick="sendCommand('!bal')">💵 Баланс</button>
-        <button class="btn" onclick="sendCommand('!res')">💰 Ресы</button>
-        <button class="btn" onclick="sendCommand('!stats')">📊 Стат</button>
-
-        <button class="btn" onclick="sendCommand('!shield')">🛡 Щит</button>
-        <button class="btn" onclick="sendCommand('!hunt')">🎯 Охота</button>
-        <button class="btn" onclick="sendCommand('!dragon')">🐉 Дракон</button>
-
-        <button class="btn" onclick="sendCommand('!exped')">🧭 Экспед</button>
-        <button class="btn" onclick="sendCommand('!camp')">⛺ Лагерь</button>
-        <button class="btn" onclick="sendCommand('!msg')">📢 Сообщ</button>
-
-        <button class="btn btn-full" onclick="sendCommand('/menu')">🏠 Главное Меню</button>
+    <!-- Модальное окно -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modalContent">
+            <!-- Контент загружается динамически -->
+        </div>
     </div>
 
-    <div class="status" id="status">
-        ✨ Ожидаю команду...
-    </div>
-
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand(); // Раскрыть на весь экран
-
-        // Настройка цветов под тему Telegram
-        document.documentElement.style.setProperty('--tg-theme-bg-color', tg.backgroundColor || '#ffffff');
-        document.documentElement.style.setProperty('--tg-theme-text-color', tg.textColor || '#000000');
-        document.documentElement.style.setProperty('--tg-theme-button-color', tg.buttonColor || '#3390ec');
-        document.documentElement.style.setProperty('--tg-theme-button-text-color', tg.buttonTextColor || '#ffffff');
-
-        function sendCommand(command) {
-            const status = document.getElementById('status');
-            status.textContent = `✅ Отправлено: ${command}`;
-
-            // Отправляем данные боту
-            tg.sendData(command);
-
-            // Закрываем Web App через 1 секунду
-            setTimeout(() => {
-                tg.close();
-            }, 1000);
-        }
-
-        // Готово!
-        tg.ready();
-    </script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
 </body>
 
 </html>
