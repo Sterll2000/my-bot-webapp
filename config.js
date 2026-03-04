@@ -1,11 +1,10 @@
 // config.js
 const CONFIG = {
-    // Цвета в стиле BTC Shop
     colors: {
-        primary: '#f7931a',      // Bitcoin orange
+        primary: '#f7931a',
         primaryDark: '#e8830d',
-        secondary: '#1a1f2e',    // Dark blue
-        accent: '#00d4aa',       // Teal
+        secondary: '#1a1f2e',
+        accent: '#00d4aa',
         success: '#00c853',
         error: '#ff5252',
         warning: '#ffb300',
@@ -14,20 +13,17 @@ const CONFIG = {
         text: '#ffffff',
         textSecondary: '#8b949e'
     },
-
-    // API настройки
+    
     api: {
         botToken: '8768027801:AAE-nFdnWkLLAVrjLIL5DGN_HIRz8k7JZ8o',
         baseUrl: 'https://api.telegram.org/bot'
     },
-
-    // Настройки модальных окон
+    
     modals: {
         animationDuration: 300,
         autoCloseDelay: 3000
     },
-
-    // Лимиты
+    
     limits: {
         maxFriends: 120,
         minInterval: 1,
@@ -35,11 +31,11 @@ const CONFIG = {
     }
 };
 
-// Пользовательские данные (заполняется при запуске)
+// ✅ userData объявляем ТОЛЬКО здесь
 let userData = {
     telegramId: null,
     username: null,
-    role: 'client', // 'operator' или 'client'
+    role: 'client',
     linkedOperator: null,
     linkedClient: null,
     chatId: null
