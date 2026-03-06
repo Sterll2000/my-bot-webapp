@@ -373,6 +373,50 @@ function showNotification(message, type) {
     }, 3000);
 }
 
+// app.js - добавьте этот код
+
+function sendCommand(command) {
+    console.log('=== SEND COMMAND ===');
+    console.log('Command:', command);
+    console.log('tg.platform:', tg.platform);
+    console.log('tg.initDataUnsafe:', tg.initDataUnsafe ? 'YES' : 'NO');
+    console.log('tg.sendData:', typeof tg.sendData);
+
+    showNotification('📤 Отправка: ' + command, 'info');
+
+    // Проверка
+    if (tg.platform === 'unknown' || !tg.initDataUnsafe) {
+        showNotification('❌ Откройте через /webapp команду!', 'error');
+        showNotification('❌ Не через кнопку меню слева!', 'error');
+        console.error('Web App opened incorrectly!');
+        return;
+    }
+
+    if (typeof tg.sendData === 'function') {
+        showNotification('⏳ Отправка...', 'info');
+
+        try {
+            tg.sendData(command);
+            console.log('✅ tg.sendData() ВЫЗВАН!');
+            console.log('✅ Данные отправлены боту!');
+
+            // ✅ ЯВНОЕ ПОДТВЕРЖДЕНИЕ
+            showNotification('✅ ДАННЫЕ ОТПРАВЛЕНЫ БОТУ!', 'success');
+            showNotification('📬 Проверьте чат с ботом!', 'info');
+
+            // НЕ закрываем Web App
+            // tg.close(); // УБРАНО!
+
+        } catch (error) {
+            console.error('Ошибка tg.sendData:', error);
+            showNotification('❌ Ошибка: ' + error.message, 'error');
+        }
+    } else {
+        showNotification('❌ tg.sendData не доступен!', 'error');
+        console.error('tg.sendData is not a function!');
+    }
+}
+
 // Экспорт функций
 window.openModal = openModal;
 window.sendCommand = sendCommand;
