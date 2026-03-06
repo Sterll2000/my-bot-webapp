@@ -15,11 +15,43 @@ document.addEventListener('DOMContentLoaded', function () {
     loadUserData();
 });
 
+// ✅ ФУНКЦИЯ ОТПРАВКИ ЛОГОВ БОТУ
+function sendLogToBot(message) {
+    console.log('[WEB APP LOG]:', message);
+
+    // Отправляем лог через tg.sendData (для отладки)
+    // В продакшене лучше использовать отдельный эндпоинт
+    const logCommand = '!log ' + message;
+    // tg.sendData(logCommand); // Раскомментируйте для отладки
+}
+
+// ОТПРАВКА КОМАНДЫ В БОТА
+function sendCommand(command) {
+    console.log('Sending command:', command);
+    sendLogToBot('Command sent: ' + command);
+
+    showNotification('Отправка: ' + command, 'success');
+
+    // ✅ ВАЖНО: Проверяем что tg.sendData существует
+    if (tg && tg.sendData) {
+        tg.sendData(command);
+        sendLogToBot('sendData called successfully');
+    } else {
+        sendLogToBot('ERROR: tg.sendData not available!');
+    }
+    setTimeout(function () {
+        tg.close();
+    }, 500);
+}
+
 // Инициализация
 function initApp() {
     // Раскрыть на весь экран
     tg.expand();
 
+    sendLogToBot('Web App initialized');
+    sendLogToBot('Platform: ' + tg.platform);
+    sendLogToBot('ColorScheme: ' + tg.colorScheme);
     // Настройка Main Button
     tg.MainButton.setText("ВЫПОЛНИТЬ");
     tg.MainButton.setParams({
