@@ -6,8 +6,6 @@ var tg = window.Telegram.WebApp;
 // Глобальные переменные
 var currentModal = null;
 
-// ✅ НЕ объявляем userData здесь - она уже в config.js!
-
 // Инициализация приложения
 document.addEventListener('DOMContentLoaded', function () {
     initApp();
@@ -15,43 +13,11 @@ document.addEventListener('DOMContentLoaded', function () {
     loadUserData();
 });
 
-// ✅ ФУНКЦИЯ ОТПРАВКИ ЛОГОВ БОТУ
-function sendLogToBot(message) {
-    console.log('[WEB APP LOG]:', message);
-
-    // Отправляем лог через tg.sendData (для отладки)
-    // В продакшене лучше использовать отдельный эндпоинт
-    const logCommand = '!log ' + message;
-    // tg.sendData(logCommand); // Раскомментируйте для отладки
-}
-
-// ОТПРАВКА КОМАНДЫ В БОТА
-function sendCommand(command) {
-    console.log('Sending command:', command);
-    sendLogToBot('Command sent: ' + command);
-
-    showNotification('Отправка: ' + command, 'success');
-
-    // ✅ ВАЖНО: Проверяем что tg.sendData существует
-    if (tg && tg.sendData) {
-        tg.sendData(command);
-        sendLogToBot('sendData called successfully');
-    } else {
-        sendLogToBot('ERROR: tg.sendData not available!');
-    }
-    setTimeout(function () {
-        tg.close();
-    }, 500);
-}
-
 // Инициализация
 function initApp() {
     // Раскрыть на весь экран
     tg.expand();
 
-    sendLogToBot('Web App initialized');
-    sendLogToBot('Platform: ' + tg.platform);
-    sendLogToBot('ColorScheme: ' + tg.colorScheme);
     // Настройка Main Button
     tg.MainButton.setText("ВЫПОЛНИТЬ");
     tg.MainButton.setParams({
@@ -77,9 +43,12 @@ function initApp() {
         document.getElementById('userId').textContent = '@' + (userData.username || userData.telegramId);
     }
 
+    // ✅ ЛОГИРОВАНИЕ ЧЕРЕЗ УВЕДОМЛЕНИЯ
+    showNotification('Web App запущен! 🎀', 'success');
+    showNotification('Platform: ' + tg.platform, 'info');
+
     console.log('Web App initialized');
     console.log('User ID:', userData.telegramId);
-    console.log('Username:', userData.username);
     console.log('Platform:', tg.platform);
 
     // Готово
@@ -103,22 +72,42 @@ function createParticles() {
 
 // Загрузка данных пользователя
 function loadUserData() {
-    showNotification('Добро пожаловать! 🎀', 'success');
+    // Пустая функция - уведомление уже в initApp
 }
 
 // ОТПРАВКА КОМАНДЫ В БОТА
 function sendCommand(command) {
-    console.log('Sending command:', command);
+    // ✅ ЛОГИРОВАНИЕ
+    console.log('=== SEND COMMAND ===');
+    console.log('Command:', command);
+    console.log('tg object:', tg);
+    console.log('tg.sendData:', typeof tg.sendData);
+
     showNotification('Отправка: ' + command, 'success');
-    tg.sendData(command);
-    setTimeout(function () {
-        tg.close();
-    }, 500);
+
+    // ✅ ПРОВЕРКА ПЕРЕД ОТПРАВКОЙ
+    if (typeof tg.sendData === 'function') {
+        showNotification('tg.sendData вызван...', 'info');
+        tg.sendData(command);
+
+        setTimeout(function () {
+            showNotification('Web App закрывается...', 'info');
+            tg.close();
+        }, 500);
+    } else {
+        showNotification('ОШИБКА: tg.sendData не доступен!', 'error');
+        console.error('tg.sendData is not a function!');
+    }
 }
 
 // Обработчики кнопок
 function openModal(type) {
     currentModal = type;
+
+    console.log('=== OPEN MODAL ===');
+    console.log('Modal type:', type);
+
+    showNotification('Открываю: ' + type, 'info');
 
     switch (type) {
         case 'stop':
@@ -161,8 +150,11 @@ function showStopModal() {
 function executeStop() {
     var seconds = document.getElementById('stopSeconds').value;
 
+    console.log('=== EXECUTE STOP ===');
+    console.log('Seconds:', seconds);
+
     if (!seconds || seconds < 1) {
-        showNotification('Введите корректное число секунд!', 'error');
+        showNotification('Введите число от 1 до 3600!', 'error');
         return;
     }
 
@@ -196,13 +188,16 @@ function executeFriends() {
     var count = document.getElementById('friendsCount').value;
     var interval = document.getElementById('friendsInterval').value || 2;
 
+    console.log('=== EXECUTE FRIENDS ===');
+    console.log('Count:', count, 'Interval:', interval);
+
     if (!count || count < 1 || count > 120) {
-        showNotification('Количество должно быть от 1 до 120!', 'error');
+        showNotification('Количество: 1-120!', 'error');
         return;
     }
 
     if (interval < 1 || interval > 60) {
-        showNotification('Интервал должен быть от 1 до 60 секунд!', 'error');
+        showNotification('Интервал: 1-60 сек!', 'error');
         return;
     }
 
@@ -226,6 +221,8 @@ function showBalanceModal() {
 
 function checkBalance(type) {
     var command = type === 'personal' ? '!bal' : '!bankbal';
+    console.log('=== CHECK BALANCE ===');
+    console.log('Type:', type, 'Command:', command);
     sendCommand(command);
 }
 
@@ -251,6 +248,9 @@ function showCampModal() {
 function executeCamp() {
     var x = document.getElementById('campX').value;
     var y = document.getElementById('campY').value;
+
+    console.log('=== EXECUTE CAMP ===');
+    console.log('X:', x, 'Y:', y);
 
     if (!x || !y) {
         showNotification('Введите обе координаты!', 'error');
@@ -287,6 +287,9 @@ function executeHunt() {
     var x = document.getElementById('huntX').value;
     var y = document.getElementById('huntY').value;
 
+    console.log('=== EXECUTE HUNT ===');
+    console.log('X:', x, 'Y:', y);
+
     if (!x || !y) {
         showNotification('Введите обе координаты!', 'error');
         return;
@@ -304,6 +307,10 @@ function showModal(html) {
     var overlay = document.getElementById('modalOverlay');
     var modalContent = document.getElementById('modalContent');
 
+    console.log('=== SHOW MODAL ===');
+    console.log('Overlay:', overlay);
+    console.log('Content:', modalContent);
+
     modalContent.innerHTML = html;
     overlay.classList.add('active');
 }
@@ -316,11 +323,20 @@ function closeModal() {
 
     tg.MainButton.offClick();
     tg.MainButton.hide();
+
+    console.log('=== MODAL CLOSED ===');
 }
 
 // Показать уведомление
 function showNotification(message, type) {
     type = type || 'success';
+
+    // Удаляем старые уведомления
+    var old = document.querySelectorAll('.notification');
+    for (var i = 0; i < old.length; i++) {
+        old[i].remove();
+    }
+
     var notification = document.createElement('div');
     notification.className = 'notification ' + type;
     notification.textContent = message;
@@ -338,8 +354,7 @@ function showNotification(message, type) {
     }, 3000);
 }
 
-// ✅ Функции уже в глобальной области видимости (var/function)
-// Дополнительный экспорт для надёжности
+// Экспорт функций
 window.openModal = openModal;
 window.sendCommand = sendCommand;
 window.closeModal = closeModal;

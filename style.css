@@ -169,6 +169,11 @@ body {
     gap: 10px;
 }
 
+.notification.info {
+    border-left-color: #00d4aa;
+    background: rgba(0, 212, 170, 0.1);
+}
+
 .status-dot {
     width: 10px;
     height: 10px;
