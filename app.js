@@ -43,9 +43,8 @@ function initApp() {
         document.getElementById('userId').textContent = '@' + (userData.username || userData.telegramId);
     }
 
-    // ✅ ЛОГИРОВАНИЕ ЧЕРЕЗ УВЕДОМЛЕНИЯ
+    // ✅ Уведомление при запуске
     showNotification('Web App запущен! 🎀', 'success');
-    showNotification('Platform: ' + tg.platform, 'info');
 
     console.log('Web App initialized');
     console.log('User ID:', userData.telegramId);
@@ -72,30 +71,29 @@ function createParticles() {
 
 // Загрузка данных пользователя
 function loadUserData() {
-    // Пустая функция - уведомление уже в initApp
+    // Пустая функция
 }
 
-// ОТПРАВКА КОМАНДЫ В БОТА
+// ✅ ОТПРАВКА КОМАНДЫ В БОТА (НЕ ЗАКРЫВАЕТ WEB APP)
 function sendCommand(command) {
-    // ✅ ЛОГИРОВАНИЕ
     console.log('=== SEND COMMAND ===');
     console.log('Command:', command);
-    console.log('tg object:', tg);
-    console.log('tg.sendData:', typeof tg.sendData);
 
-    showNotification('Отправка: ' + command, 'success');
+    // ✅ Показываем уведомление
+    showNotification('📤 Отправка: ' + command, 'info');
 
-    // ✅ ПРОВЕРКА ПЕРЕД ОТПРАВКОЙ
+    // ✅ Проверка перед отправкой
     if (typeof tg.sendData === 'function') {
-        showNotification('tg.sendData вызван...', 'info');
         tg.sendData(command);
 
+        // ✅ Уведомление об успехе (НЕ закрываем Web App!)
         setTimeout(function () {
-            showNotification('Web App закрывается...', 'info');
-            tg.close();
-        }, 500);
+            showNotification('✅ Команда отправлена!', 'success');
+        }, 300);
+
+        // ❌ УБРАЛИ tg.close() - Web App НЕ закрывается!
     } else {
-        showNotification('ОШИБКА: tg.sendData не доступен!', 'error');
+        showNotification('❌ Ошибка: tg.sendData не доступен!', 'error');
         console.error('tg.sendData is not a function!');
     }
 }
@@ -107,7 +105,7 @@ function openModal(type) {
     console.log('=== OPEN MODAL ===');
     console.log('Modal type:', type);
 
-    showNotification('Открываю: ' + type, 'info');
+    showNotification('📋 Открываю: ' + type, 'info');
 
     switch (type) {
         case 'stop':
@@ -154,12 +152,15 @@ function executeStop() {
     console.log('Seconds:', seconds);
 
     if (!seconds || seconds < 1) {
-        showNotification('Введите число от 1 до 3600!', 'error');
+        showNotification('⚠️ Введите число от 1 до 3600!', 'error');
         return;
     }
 
     var command = '!stop ' + seconds;
     sendCommand(command);
+
+    // ✅ Закрываем модальное окно, НЕ Web App
+    closeModal();
 
     tg.MainButton.offClick();
     tg.MainButton.hide();
@@ -192,17 +193,19 @@ function executeFriends() {
     console.log('Count:', count, 'Interval:', interval);
 
     if (!count || count < 1 || count > 120) {
-        showNotification('Количество: 1-120!', 'error');
+        showNotification('⚠️ Количество: 1-120!', 'error');
         return;
     }
 
     if (interval < 1 || interval > 60) {
-        showNotification('Интервал: 1-60 сек!', 'error');
+        showNotification('⚠️ Интервал: 1-60 сек!', 'error');
         return;
     }
 
     var command = '!spam ' + count + ' ' + interval;
     sendCommand(command);
+
+    closeModal();
 
     tg.MainButton.offClick();
     tg.MainButton.hide();
@@ -224,6 +227,7 @@ function checkBalance(type) {
     console.log('=== CHECK BALANCE ===');
     console.log('Type:', type, 'Command:', command);
     sendCommand(command);
+    closeModal();
 }
 
 // МОДАЛЬНОЕ ОКНО: ЛАГЕРЬ
@@ -253,12 +257,14 @@ function executeCamp() {
     console.log('X:', x, 'Y:', y);
 
     if (!x || !y) {
-        showNotification('Введите обе координаты!', 'error');
+        showNotification('⚠️ Введите обе координаты!', 'error');
         return;
     }
 
     var command = '!camp ' + x + ' ' + y;
     sendCommand(command);
+
+    closeModal();
 
     tg.MainButton.offClick();
     tg.MainButton.hide();
@@ -291,12 +297,14 @@ function executeHunt() {
     console.log('X:', x, 'Y:', y);
 
     if (!x || !y) {
-        showNotification('Введите обе координаты!', 'error');
+        showNotification('⚠️ Введите обе координаты!', 'error');
         return;
     }
 
     var command = '!hunt ' + x + ' ' + y;
     sendCommand(command);
+
+    closeModal();
 
     tg.MainButton.offClick();
     tg.MainButton.hide();
@@ -308,8 +316,6 @@ function showModal(html) {
     var modalContent = document.getElementById('modalContent');
 
     console.log('=== SHOW MODAL ===');
-    console.log('Overlay:', overlay);
-    console.log('Content:', modalContent);
 
     modalContent.innerHTML = html;
     overlay.classList.add('active');
@@ -327,25 +333,29 @@ function closeModal() {
     console.log('=== MODAL CLOSED ===');
 }
 
-// Показать уведомление
+// ✅ Показывать уведомление (исправлено)
 function showNotification(message, type) {
     type = type || 'success';
 
-    // Удаляем старые уведомления
-    var old = document.querySelectorAll('.notification');
-    for (var i = 0; i < old.length; i++) {
-        old[i].remove();
+    // ✅ Удаляем ВСЕ старые уведомления
+    var oldNotifications = document.querySelectorAll('.notification');
+    for (var i = 0; i < oldNotifications.length; i++) {
+        oldNotifications[i].remove();
     }
 
+    // ✅ Создаём новое
     var notification = document.createElement('div');
     notification.className = 'notification ' + type;
     notification.textContent = message;
 
     document.body.appendChild(notification);
 
+    // ✅ Показываем
     setTimeout(function () {
         notification.classList.add('show');
     }, 10);
+
+    // ✅ Скрываем через 3 секунды
     setTimeout(function () {
         notification.classList.remove('show');
         setTimeout(function () {
