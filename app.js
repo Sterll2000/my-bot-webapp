@@ -375,46 +375,69 @@ function showNotification(message, type) {
 
 // app.js - добавьте этот код
 
+// app.js - замените функцию sendCommand
+
 function sendCommand(command) {
     console.log('=== SEND COMMAND ===');
     console.log('Command:', command);
     console.log('tg.platform:', tg.platform);
-    console.log('tg.initDataUnsafe:', tg.initDataUnsafe ? 'YES' : 'NO');
-    console.log('tg.sendData:', typeof tg.sendData);
 
     showNotification('📤 Отправка: ' + command, 'info');
 
-    // Проверка
-    if (tg.platform === 'unknown' || !tg.initDataUnsafe) {
-        showNotification('❌ Откройте через /webapp команду!', 'error');
-        showNotification('❌ Не через кнопку меню слева!', 'error');
-        console.error('Web App opened incorrectly!');
-        return;
-    }
-
-    if (typeof tg.sendData === 'function') {
-        showNotification('⏳ Отправка...', 'info');
+    // ✅ СПОСОБ 1: tg.sendData() (работает на Desktop)
+    if (typeof tg.sendData === 'function' && tg.platform !== 'unknown') {
+        showNotification('⏳ Отправка через Telegram...', 'info');
 
         try {
             tg.sendData(command);
-            console.log('✅ tg.sendData() ВЫЗВАН!');
-            console.log('✅ Данные отправлены боту!');
+            console.log('✅ tg.sendData() вызван');
 
-            // ✅ ЯВНОЕ ПОДТВЕРЖДЕНИЕ
-            showNotification('✅ ДАННЫЕ ОТПРАВЛЕНЫ БОТУ!', 'success');
-            showNotification('📬 Проверьте чат с ботом!', 'info');
-
-            // НЕ закрываем Web App
-            // tg.close(); // УБРАНО!
+            setTimeout(function () {
+                showNotification('✅ Отправлено!', 'success');
+                showNotification('📬 Проверьте чат с ботом', 'info');
+            }, 500);
 
         } catch (error) {
-            console.error('Ошибка tg.sendData:', error);
-            showNotification('❌ Ошибка: ' + error.message, 'error');
+            console.error('tg.sendData error:', error);
+            showNotification('❌ Ошибка Telegram', 'error');
+            // Пробуем способ 2
+            sendViaHTTP(command);
         }
     } else {
-        showNotification('❌ tg.sendData не доступен!', 'error');
-        console.error('tg.sendData is not a function!');
+        // ✅ СПОСОБ 2: HTTP запрос (работает везде!)
+        sendViaHTTP(command);
     }
+}
+
+// ✅ НОВАЯ ФУНКЦИЯ: Отправка через HTTP
+function sendViaHTTP(command) {
+    showNotification('⏳ Отправка через сервер...', 'info');
+
+    // Получаем данные пользователя из Telegram
+    var initData = tg.initData || '';
+    var userId = userData.telegramId || '';
+
+    // Отправляем на ваш сервер (или напрямую боту)
+    fetch('https://your-server.com/webhook', {  // ← Замените на ваш сервер
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            command: command,
+            userId: userId,
+            initData: initData
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('✅ HTTP response:', data);
+            showNotification('✅ Команда отправлена!', 'success');
+        })
+        .catch(error => {
+            console.error('HTTP error:', error);
+            showNotification('❌ Ошибка сети', 'error');
+        });
 }
 
 // Экспорт функций
