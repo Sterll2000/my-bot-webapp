@@ -1,31 +1,23 @@
 // app.js
 
-// Инициализация Telegram Web App
 var tg = window.Telegram.WebApp;
-
-// Глобальные переменные
 var currentModal = null;
 
-// Инициализация приложения
 document.addEventListener('DOMContentLoaded', function () {
     initApp();
     createParticles();
     loadUserData();
 });
 
-// Инициализация
 function initApp() {
-    // Раскрыть на весь экран
     tg.expand();
 
-    // Настройка Main Button
     tg.MainButton.setText("ВЫПОЛНИТЬ");
     tg.MainButton.setParams({
         color: '#f7931a',
         text_color: '#ffffff'
     });
 
-    // Настройка цветов под тему Telegram
     if (tg.colorScheme === 'dark') {
         document.documentElement.style.setProperty('--bg', '#0f1419');
         document.documentElement.style.setProperty('--card', '#1a1f2e');
@@ -36,25 +28,29 @@ function initApp() {
         document.documentElement.style.setProperty('--text', '#000000');
     }
 
-    // Установка данных пользователя
     if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
         userData.telegramId = tg.initDataUnsafe.user.id;
         userData.username = tg.initDataUnsafe.user.username;
         document.getElementById('userId').textContent = '@' + (userData.username || userData.telegramId);
     }
 
-    // ✅ Уведомление при запуске
+    // ✅ ПРОВЕРКА: Запущено ли в Telegram
+    if (tg.platform === 'unknown') {
+        showNotification('⚠️ Откройте в Telegram, не в браузере!', 'error');
+    } else {
+        showNotification('✅ Запущено в Telegram: ' + tg.platform, 'success');
+    }
+
     showNotification('Web App запущен! 🎀', 'success');
 
-    console.log('Web App initialized');
-    console.log('User ID:', userData.telegramId);
+    console.log('=== WEB APP INIT ===');
     console.log('Platform:', tg.platform);
+    console.log('UserID:', userData.telegramId);
+    console.log('tg.sendData exists:', typeof tg.sendData);
 
-    // Готово
     tg.ready();
 }
 
-// Создание частиц фона
 function createParticles() {
     var container = document.querySelector('.particles');
     if (!container) return;
@@ -69,36 +65,62 @@ function createParticles() {
     }
 }
 
-// Загрузка данных пользователя
-function loadUserData() {
-    // Пустая функция
-}
+function loadUserData() { }
 
-// ✅ ОТПРАВКА КОМАНДЫ В БОТА (НЕ ЗАКРЫВАЕТ WEB APP)
+// ✅ ОТПРАВКА КОМАНДЫ (ИСПРАВЛЕНО)
 function sendCommand(command) {
     console.log('=== SEND COMMAND ===');
     console.log('Command:', command);
+    console.log('tg object:', tg);
+    console.log('tg.sendData:', typeof tg.sendData);
+    console.log('tg.ready:', tg.ready);
 
-    // ✅ Показываем уведомление
     showNotification('📤 Отправка: ' + command, 'info');
 
-    // ✅ Проверка перед отправкой
+    // ✅ ПРОВЕРКА: Запущено в Telegram?
+    if (tg.platform === 'unknown') {
+        showNotification('❌ Откройте в Telegram!', 'error');
+        console.error('Web App opened in browser, not Telegram!');
+        return;
+    }
+
+    // ✅ ПРОВЕРКА: sendData доступен?
     if (typeof tg.sendData === 'function') {
-        tg.sendData(command);
+        showNotification('⏳ Отправка данных...', 'info');
 
-        // ✅ Уведомление об успехе (НЕ закрываем Web App!)
-        setTimeout(function () {
-            showNotification('✅ Команда отправлена!', 'success');
-        }, 300);
+        try {
+            tg.sendData(command);
+            console.log('✅ tg.sendData() вызван успешно');
+            console.log('Data sent:', command);
 
-        // ❌ УБРАЛИ tg.close() - Web App НЕ закрывается!
+            // ✅ Уведомление об успехе (НЕ закрываем Web App)
+            setTimeout(function () {
+                showNotification('✅ Команда отправлена боту!', 'success');
+            }, 500);
+
+            // ❌ НЕ закрываем Web App
+            // tg.close(); // УБРАНО!
+
+        } catch (error) {
+            console.error('Error in tg.sendData:', error);
+            showNotification('❌ Ошибка отправки: ' + error, 'error');
+        }
     } else {
-        showNotification('❌ Ошибка: tg.sendData не доступен!', 'error');
+        showNotification('❌ tg.sendData не доступен!', 'error');
         console.error('tg.sendData is not a function!');
+
+        // ✅ АЛЬТЕРНАТИВА: Копировать команду
+        showNotification('📋 Скопируйте команду вручную', 'info');
+
+        // Можно добавить кнопку копирования
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(command).then(function () {
+                showNotification('📋 Команда скопирована!', 'success');
+            });
+        }
     }
 }
 
-// Обработчики кнопок
 function openModal(type) {
     currentModal = type;
 
@@ -128,7 +150,6 @@ function openModal(type) {
     }
 }
 
-// МОДАЛЬНОЕ ОКНО: СТОП
 function showStopModal() {
     var html = '<div class="modal-header"><h2>🛑 Стоп Бот</h2><p>Укажите длительность паузы</p></div>' +
         '<div class="input-group"><label>Секунды остановки</label>' +
@@ -159,14 +180,12 @@ function executeStop() {
     var command = '!stop ' + seconds;
     sendCommand(command);
 
-    // ✅ Закрываем модальное окно, НЕ Web App
     closeModal();
 
     tg.MainButton.offClick();
     tg.MainButton.hide();
 }
 
-// МОДАЛЬНОЕ ОКНО: ДРУЖИМ
 function showFriendsModal() {
     var html = '<div class="modal-header"><h2>🤝 Дружим</h2><p>Настройка авто-дружбы</p></div>' +
         '<div class="input-group"><label>Количество ручек (макс. 120)</label>' +
@@ -211,7 +230,6 @@ function executeFriends() {
     tg.MainButton.hide();
 }
 
-// МОДАЛЬНОЕ ОКНО: БАЛАНС
 function showBalanceModal() {
     var html = '<div class="modal-header"><h2>💵 Баланс</h2><p>Выберите тип баланса</p></div>' +
         '<div class="modal-buttons" style="flex-direction: column; gap: 15px;">' +
@@ -230,7 +248,6 @@ function checkBalance(type) {
     closeModal();
 }
 
-// МОДАЛЬНОЕ ОКНО: ЛАГЕРЬ
 function showCampModal() {
     var html = '<div class="modal-header"><h2>⛺ Лагерь</h2><p>Укажите координаты</p></div>' +
         '<div class="input-group"><label>Координата X</label>' +
@@ -270,7 +287,6 @@ function executeCamp() {
     tg.MainButton.hide();
 }
 
-// МОДАЛЬНОЕ ОКНО: ОХОТА
 function showHuntModal() {
     var html = '<div class="modal-header"><h2>🎯 Охота</h2><p>Укажите координаты для охоты</p></div>' +
         '<div class="input-group"><label>Координата X</label>' +
@@ -310,7 +326,6 @@ function executeHunt() {
     tg.MainButton.hide();
 }
 
-// Показать модальное окно
 function showModal(html) {
     var overlay = document.getElementById('modalOverlay');
     var modalContent = document.getElementById('modalContent');
@@ -321,7 +336,6 @@ function showModal(html) {
     overlay.classList.add('active');
 }
 
-// Закрыть модальное окно
 function closeModal() {
     var overlay = document.getElementById('modalOverlay');
     overlay.classList.remove('active');
@@ -333,29 +347,24 @@ function closeModal() {
     console.log('=== MODAL CLOSED ===');
 }
 
-// ✅ Показывать уведомление (исправлено)
 function showNotification(message, type) {
     type = type || 'success';
 
-    // ✅ Удаляем ВСЕ старые уведомления
     var oldNotifications = document.querySelectorAll('.notification');
     for (var i = 0; i < oldNotifications.length; i++) {
         oldNotifications[i].remove();
     }
 
-    // ✅ Создаём новое
     var notification = document.createElement('div');
     notification.className = 'notification ' + type;
     notification.textContent = message;
 
     document.body.appendChild(notification);
 
-    // ✅ Показываем
     setTimeout(function () {
         notification.classList.add('show');
     }, 10);
 
-    // ✅ Скрываем через 3 секунды
     setTimeout(function () {
         notification.classList.remove('show');
         setTimeout(function () {
