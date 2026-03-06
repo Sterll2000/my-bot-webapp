@@ -34,19 +34,26 @@ function initApp() {
         document.getElementById('userId').textContent = '@' + (userData.username || userData.telegramId);
     }
 
-    // ✅ ПРОВЕРКА: Запущено ли в Telegram
-    if (tg.platform === 'unknown') {
-        showNotification('⚠️ Откройте в Telegram, не в браузере!', 'error');
+    // ✅ ДЕТАЛЬНАЯ ДИАГНОСТИКА
+    console.log('=== TELEGRAM WEB APP INFO ===');
+    console.log('Platform:', tg.platform);
+    console.log('ColorScheme:', tg.colorScheme);
+    console.log('UserID:', userData.telegramId);
+    console.log('tg.sendData:', typeof tg.sendData);
+    console.log('tg.sendData exists:', tg.sendData !== undefined);
+    console.log('initDataUnsafe:', tg.initDataUnsafe ? 'YES' : 'NO');
+    console.log('================================');
+
+    // ✅ ПРОВЕРКА: Запущено в Telegram?
+    if (tg.platform === 'unknown' || !tg.initDataUnsafe) {
+        showNotification('⚠️ Откройте В TELEGRAM, не в браузере!', 'error');
+        showNotification('❌ tg.sendData не будет работать!', 'error');
     } else {
         showNotification('✅ Запущено в Telegram: ' + tg.platform, 'success');
+        showNotification('✅ tg.sendData доступен', 'success');
     }
 
     showNotification('Web App запущен! 🎀', 'success');
-
-    console.log('=== WEB APP INIT ===');
-    console.log('Platform:', tg.platform);
-    console.log('UserID:', userData.telegramId);
-    console.log('tg.sendData exists:', typeof tg.sendData);
 
     tg.ready();
 }
@@ -67,66 +74,59 @@ function createParticles() {
 
 function loadUserData() { }
 
-// ✅ ОТПРАВКА КОМАНДЫ (ИСПРАВЛЕНО)
+// ✅ ОТПРАВКА КОМАНДЫ (С ПРОВЕРКОЙ)
 function sendCommand(command) {
-    console.log('=== SEND COMMAND ===');
+    console.log('=== SEND COMMAND DEBUG ===');
     console.log('Command:', command);
     console.log('tg object:', tg);
     console.log('tg.sendData:', typeof tg.sendData);
-    console.log('tg.ready:', tg.ready);
+    console.log('tg.platform:', tg.platform);
+    console.log('tg.initDataUnsafe:', tg.initDataUnsafe ? 'YES' : 'NO');
+    console.log('=========================');
 
     showNotification('📤 Отправка: ' + command, 'info');
 
-    // ✅ ПРОВЕРКА: Запущено в Telegram?
-    if (tg.platform === 'unknown') {
-        showNotification('❌ Откройте в Telegram!', 'error');
-        console.error('Web App opened in browser, not Telegram!');
+    // ✅ ПРОВЕРКА 1: Запущено в Telegram?
+    if (tg.platform === 'unknown' || !tg.initDataUnsafe) {
+        showNotification('❌ Откройте В TELEGRAM!', 'error');
+        showNotification('📋 Команда: ' + command, 'info');
+        console.error('Web App opened in BROWSER, not Telegram!');
+        console.error('tg.sendData will NOT work!');
         return;
     }
 
-    // ✅ ПРОВЕРКА: sendData доступен?
+    // ✅ ПРОВЕРКА 2: sendData доступен?
     if (typeof tg.sendData === 'function') {
-        showNotification('⏳ Отправка данных...', 'info');
+        showNotification('⏳ Отправка данных боту...', 'info');
 
         try {
+            console.log('Calling tg.sendData("' + command + '")...');
             tg.sendData(command);
-            console.log('✅ tg.sendData() вызван успешно');
-            console.log('Data sent:', command);
+            console.log('✅ tg.sendData() called successfully!');
 
-            // ✅ Уведомление об успехе (НЕ закрываем Web App)
             setTimeout(function () {
                 showNotification('✅ Команда отправлена боту!', 'success');
+                showNotification('🎀 Проверьте чат с ботом', 'info');
             }, 500);
-
-            // ❌ НЕ закрываем Web App
-            // tg.close(); // УБРАНО!
 
         } catch (error) {
             console.error('Error in tg.sendData:', error);
-            showNotification('❌ Ошибка отправки: ' + error, 'error');
+            showNotification('❌ Ошибка: ' + error.message, 'error');
         }
     } else {
         showNotification('❌ tg.sendData не доступен!', 'error');
         console.error('tg.sendData is not a function!');
-
-        // ✅ АЛЬТЕРНАТИВА: Копировать команду
-        showNotification('📋 Скопируйте команду вручную', 'info');
-
-        // Можно добавить кнопку копирования
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(command).then(function () {
-                showNotification('📋 Команда скопирована!', 'success');
-            });
-        }
+        console.error('tg object:', tg);
     }
 }
 
+// ... (остальные функции как были: openModal, showStopModal, и т.д.)
+// ... (весь остальной код app.js без изменений)
+
 function openModal(type) {
     currentModal = type;
-
     console.log('=== OPEN MODAL ===');
     console.log('Modal type:', type);
-
     showNotification('📋 Открываю: ' + type, 'info');
 
     switch (type) {
