@@ -65,40 +65,40 @@ function createParticles() {
 }
 
 // ✅ ОТПРАВКА КОМАНДЫ (ГЛАВНАЯ ФУНКЦИЯ)
+// app.js - обновите функцию sendCommand
+
 function sendCommand(command) {
     console.log('=== SEND COMMAND ===');
     console.log('Command:', command);
-    console.log('tg.sendData:', typeof tg.sendData);
-    console.log('tg.platform:', tg.platform);
 
     showNotification('📤 Отправка: ' + command, 'info');
 
-    // Проверка: запущено в Telegram?
-    if (tg.platform === 'unknown' || !tg.initDataUnsafe) {
-        showNotification('❌ Откройте В TELEGRAM!', 'error');
-        return;
-    }
+    // ✅ ОТПРАВКА ЧЕРЕЗ HTTP WEBHOOK (надёжно!)
+    var webhookUrl = 'http://127.0.0.1:5000/webhook';
 
-    // Проверка: sendData доступен?
-    if (typeof tg.sendData === 'function') {
-        showNotification('⏳ Отправка боту...', 'info');
-
-        try {
-            tg.sendData(command);
-            console.log('✅ tg.sendData() ВЫЗВАН!');
-
-            setTimeout(function () {
-                showNotification('✅ Отправлено в бота!', 'success');
-                showNotification('📬 Проверьте чат с ботом', 'info');
-            }, 500);
-
-        } catch (error) {
-            console.error('Error:', error);
-            showNotification('❌ Ошибка: ' + error.message, 'error');
-        }
-    } else {
-        showNotification('❌ tg.sendData не доступен!', 'error');
-    }
+    fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            command: command,
+            user_id: userData.telegramId || 'unknown'
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Server response:', data);
+            if (data.status === 'success') {
+                showNotification('✅ Отправлено в группу!', 'success');
+            } else {
+                showNotification('❌ Ошибка: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            showNotification('❌ Ошибка сети', 'error');
+        });
 }
 
 function openModal(type) {
