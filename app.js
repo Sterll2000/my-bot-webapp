@@ -162,8 +162,9 @@ function sendCommand(command) {
         return;
     }
 
-    // ✅ ОТПРАВКА НАПРЯМУЮ В TELEGRAM BOT API
-    var url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+    // ✅ ОТПРАВКА НАПРЯМУЮ В TELEGRAM BOT API (ЧИСТАЯ КОМАНДА!)
+    var BOT_TOKEN = '8768027801:AAE-nFdnWkLLAVrjLIL5DGN_HIRz8k7JZ8o';
+    var url = 'https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage';
 
     fetch(url, {
         method: 'POST',
@@ -171,12 +172,12 @@ function sendCommand(command) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            chat_id: userData.activeChat,
-            text: `👤 @${userData.username}\n${command}`
+            chat_id: userData.activeChat,  // ✅ Чат из базы
+            text: command  // ✅ ТОЛЬКО команда, без username!
         })
     })
         .then(response => response.json())
-        .then(data => {
+        .then(function (data) {
             console.log('Telegram response:', data);
             if (data.ok) {
                 showNotification('✅ Отправлено в чат!', 'success');
@@ -184,7 +185,7 @@ function sendCommand(command) {
                 showNotification('❌ Ошибка: ' + data.description, 'error');
             }
         })
-        .catch(error => {
+        .catch(function (error) {
             console.error('Fetch error:', error);
             showNotification('❌ Ошибка сети', 'error');
         });
