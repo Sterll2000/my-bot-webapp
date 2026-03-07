@@ -73,8 +73,10 @@ function sendCommand(command) {
 
     showNotification('📤 Отправка: ' + command, 'info');
 
-    // ✅ ОТПРАВКА ЧЕРЕЗ HTTP WEBHOOK (надёжно!)
-    var webhookUrl = 'https://sterll2000.github.io/my-bot-webapp/';
+    // ✅ ПРАВИЛЬНЫЙ URL (локальный сервер)
+    var webhookUrl = 'http://127.0.0.1:5000/webhook';
+
+    console.log('Webhook URL:', webhookUrl);
 
     fetch(webhookUrl, {
         method: 'POST',
@@ -86,7 +88,10 @@ function sendCommand(command) {
             user_id: userData.telegramId || 'unknown'
         })
     })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
         .then(data => {
             console.log('Server response:', data);
             if (data.status === 'success') {
@@ -97,7 +102,7 @@ function sendCommand(command) {
         })
         .catch(error => {
             console.error('Fetch error:', error);
-            showNotification('❌ Ошибка сети', 'error');
+            showNotification('❌ Ошибка сети: ' + error.message, 'error');
         });
 }
 
