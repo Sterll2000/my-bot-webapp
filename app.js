@@ -74,7 +74,7 @@ function sendCommand(command) {
     showNotification('📤 Отправка: ' + command, 'info');
 
     // ✅ ОТПРАВКА ЧЕРЕЗ HTTP WEBHOOK (надёжно!)
-    var webhookUrl = 'http://127.0.0.1:5000/webhook';
+    var webhookUrl = 'https://sterll2000.github.io/my-bot-webapp/';
 
     fetch(webhookUrl, {
         method: 'POST',
