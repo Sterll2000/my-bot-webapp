@@ -162,7 +162,7 @@ function sendCommand(command) {
         return;
     }
 
-    // ✅ ОТПРАВКА НАПРЯМУЮ В TELEGRAM BOT API (ЧИСТАЯ КОМАНДА!)
+    // ✅ ОТПРАВКА НАПРЯМУЮ В TELEGRAM BOT API
     var BOT_TOKEN = '8768027801:AAE-nFdnWkLLAVrjLIL5DGN_HIRz8k7JZ8o';
     var url = 'https://api.telegram.org/bot' + BOT_TOKEN + '/sendMessage';
 
@@ -172,15 +172,16 @@ function sendCommand(command) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            chat_id: userData.activeChat,  // ✅ Чат из базы
-            text: command  // ✅ ТОЛЬКО команда, без username!
+            chat_id: userData.activeChat,  // ✅ Активный чат пользователя
+            text: command  // ✅ ТОЛЬКО команда (без username!)
         })
     })
         .then(response => response.json())
         .then(function (data) {
             console.log('Telegram response:', data);
             if (data.ok) {
-                showNotification('✅ Отправлено в чат!', 'success');
+                // ✅ НЕ ПИШЕМ В ЛС! Только уведомление в Web App
+                showNotification('✅ Выполнено!', 'success');
             } else {
                 showNotification('❌ Ошибка: ' + data.description, 'error');
             }
