@@ -73,36 +73,34 @@ function sendCommand(command) {
 
     showNotification('📤 Отправка: ' + command, 'info');
 
-    // ✅ ПРАВИЛЬНЫЙ URL (локальный сервер)
-    var webhookUrl = 'http://127.0.0.1:5000/webhook';
+    // ✅ ОТПРАВКА НАПРЯМУЮ В TELEGRAM BOT API
+    var botToken = '8768027801:AAE-nFdnWkLLAVrjLIL5DGN_HIRz8k7JZ8o';
+    var chatId = '-1003890358485';  // ID группы "ПРОВЕРКА"
 
-    console.log('Webhook URL:', webhookUrl);
+    var url = `https://api.telegram.org/bot${botToken}/sendMessage`;
 
-    fetch(webhookUrl, {
+    fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            command: command,
-            user_id: userData.telegramId || 'unknown'
+            chat_id: chatId,
+            text: command
         })
     })
-        .then(response => {
-            console.log('Response status:', response.status);
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-            console.log('Server response:', data);
-            if (data.status === 'success') {
+            console.log('Telegram response:', data);
+            if (data.ok) {
                 showNotification('✅ Отправлено в группу!', 'success');
             } else {
-                showNotification('❌ Ошибка: ' + data.message, 'error');
+                showNotification('❌ Ошибка: ' + data.description, 'error');
             }
         })
         .catch(error => {
             console.error('Fetch error:', error);
-            showNotification('❌ Ошибка сети: ' + error.message, 'error');
+            showNotification('❌ Ошибка сети', 'error');
         });
 }
 
